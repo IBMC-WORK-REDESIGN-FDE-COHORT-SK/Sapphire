@@ -2,9 +2,11 @@ import { useQuery } from "@apollo/client/react";
 import { Heart, Activity, BarChart3, Moon, Info, CheckCircle } from "lucide-react";
 import Sidebar from "@/components/sidebar";
 import MetricCard from "@/components/metric-card";
+import TemperatureCard from "@/components/temperature-card";
 import HeartRateChart from "@/components/charts/heart-rate-chart";
 import ActivityChart from "@/components/charts/activity-chart";
 import BloodPressureChart from "@/components/charts/blood-pressure-chart";
+import TemperatureDetailChart from "@/components/charts/temperature-chart";
 import NotificationBell from "@/components/notification-bell";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
@@ -173,7 +175,7 @@ export default function Dashboard() {
               <p className="text-slate-600">Here's your health summary for today</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
               <MetricCard
                 title="Heart Rate"
                 value={currentHeartRate}
@@ -237,6 +239,11 @@ export default function Dashboard() {
                   isPositive: false
                 }}
               />
+
+              <TemperatureCard
+                valueCelsius={36.8}
+                status="Normal"
+              />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -244,7 +251,10 @@ export default function Dashboard() {
               <ActivityChart data={activityChartData} />
             </div>
 
-            <BloodPressureChart data={bloodPressureChartData} />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              <BloodPressureChart data={bloodPressureChartData} />
+              <TemperatureDetailChart />
+            </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
               <h4 className="text-sm font-medium text-slate-900 mb-3">Recent Blood Pressure Readings</h4>
