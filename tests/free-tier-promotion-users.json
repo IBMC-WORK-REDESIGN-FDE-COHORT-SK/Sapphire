@@ -1,0 +1,5 @@
+[
+  { "email": "alice.chen@sapphirewellness.com",   "password": "password123", "plan": "free" },
+  { "email": "bob.johnson@sapphirewellness.com",  "password": "password123", "plan": "free" },
+  { "email": "carol.white@sapphirewellness.com",  "password": "password123", "plan": "free" }
+]
