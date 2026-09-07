@@ -8,9 +8,11 @@ import ActivityChart from "@/components/charts/activity-chart";
 import BloodPressureChart from "@/components/charts/blood-pressure-chart";
 import TemperatureDetailChart from "@/components/charts/temperature-chart";
 import NotificationBell from "@/components/notification-bell";
+import PromotionRibbon from "@/components/PromotionRibbon";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useActivePromotion } from "@/hooks/useActivePromotion";
 import { useEffect } from "react";
 import { trackPage, trackEvent, AnalyticsEvents } from "@/lib/analytics";
 
@@ -25,6 +27,7 @@ import {
 export default function Dashboard() {
   const { user } = useAuth();
   const { alerts, markAsRead, markAllAsRead, clearAll, isConnected } = useNotifications();
+  const { promotion } = useActivePromotion();
 
   // Track page view
   useEffect(() => {
@@ -165,6 +168,9 @@ export default function Dashboard() {
             />
           </div>
         </header>
+
+        {/* ADF-9: Promotional ribbon — first element inside page content */}
+        <PromotionRibbon promotion={promotion} />
 
         <div className="flex-1 overflow-auto">
           <div className="p-6 lg:p-8">
