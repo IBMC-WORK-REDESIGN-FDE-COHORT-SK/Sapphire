@@ -1,4 +1,5 @@
 import { useQuery } from "@apollo/client/react";
+import { useSearchParams } from "react-router-dom";
 import { Heart, Activity, BarChart3, Moon, Info, CheckCircle } from "lucide-react";
 import Sidebar from "@/components/sidebar";
 import MetricCard from "@/components/metric-card";
@@ -11,8 +12,10 @@ import NotificationBell from "@/components/notification-bell";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useTemperatureTrends } from "@/hooks/useTemperatureTrends";
 import { useEffect } from "react";
 import { trackPage, trackEvent, AnalyticsEvents } from "@/lib/analytics";
+import { GET_LATEST_TEMPERATURE } from "@/graphql/temperature";
 
 import {
   GET_HEART_RATE_TRENDS,
@@ -25,17 +28,35 @@ import {
 export default function Dashboard() {
   const { user } = useAuth();
   const { alerts, markAsRead, markAllAsRead, clearAll, isConnected } = useNotifications();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Track page view
   useEffect(() => {
-    trackPage('Dashboard', {
-      userId: user?.email,
-    });
+    trackPage('Dashboard', { userId: user?.email });
     trackEvent(AnalyticsEvents.DASHBOARD_VIEWED, {
       userId: user?.email,
       timestamp: new Date().toISOString(),
     });
   }, [user?.email]);
+
+  // Temperature trends — period driven by URL search param (T021)
+  const urlPeriod = searchParams.get("period")?.toUpperCase() || "WEEK";
+  const {
+    period, setPeriod, unit, toggleUnit,
+    trends, loading: trendsLoading, error: trendsError
+  } = useTemperatureTrends(user?.email, urlPeriod);
+
+  // Sync period state → URL
+  useEffect(() => {
+    if (period !== urlPeriod) setSearchParams({ period: period.toLowerCase() }, { replace: true });
+  }, [period]);
+
+  // Latest temperature for the metric card (T014)
+  const { data: latestTempData } = useQuery(GET_LATEST_TEMPERATURE, {
+    variables: { userId: user?.email },
+    fetchPolicy: "network-only",
+    skip: !user?.email
+  });
 
   // Call all hooks before any conditional returns
   const { data: heartRateTrendsData } = useQuery(GET_HEART_RATE_TRENDS);
@@ -241,8 +262,9 @@ export default function Dashboard() {
               />
 
               <TemperatureCard
-                valueCelsius={36.8}
-                status="Normal"
+                valueCelsius={(latestTempData as any)?.latestTemperature?.normalizedValueCelsius ?? (latestTempData as any)?.latestTemperature?.value ?? undefined}
+                timestamp={(latestTempData as any)?.latestTemperature?.timestamp}
+                status={(latestTempData as any)?.latestTemperature?.status ?? "Normal"}
               />
             </div>
 
@@ -253,7 +275,40 @@ export default function Dashboard() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
               <BloodPressureChart data={bloodPressureChartData} />
-              <TemperatureDetailChart />
+              <div>
+                {/* Period + unit toggles (T021) */}
+                <div className="flex gap-2 mb-3">
+                  {["DAY", "WEEK", "MONTH"].map(p => (
+                    <button
+                      key={p}
+                      onClick={() => setPeriod(p)}
+                      className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${
+                        period === p
+                          ? "bg-rose-500 text-white border-rose-500"
+                          : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                      }`}
+                    >
+                      {p.charAt(0) + p.slice(1).toLowerCase()}
+                    </button>
+                  ))}
+                  <button
+                    onClick={toggleUnit}
+                    className="ml-auto px-3 py-1 text-xs font-medium rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                  >
+                    °{unit === "C" ? "F" : "C"}
+                  </button>
+                </div>
+                <TemperatureDetailChart
+                  dataPoints={trends?.dataPoints}
+                  overallMin={trends?.overallMin}
+                  overallMax={trends?.overallMax}
+                  overallAvg={trends?.overallAvg}
+                  unit={unit}
+                  loading={trendsLoading}
+                  error={trendsError}
+                  userId={user?.email}
+                />
+              </div>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">

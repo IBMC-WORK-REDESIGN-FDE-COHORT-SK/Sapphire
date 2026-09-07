@@ -14,7 +14,8 @@ export function useTemperatureTrends(userId?: string, initialPeriod: string = "W
       period,
       unit: unit === "C" ? "CELSIUS" : "FAHRENHEIT"
     },
-    fetchPolicy: "network-only"
+    fetchPolicy: "cache-and-network",
+    pollInterval: 0
   });
 
   const toggleUnit = () => {
