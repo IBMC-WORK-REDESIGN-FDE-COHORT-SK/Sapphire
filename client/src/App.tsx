@@ -17,6 +17,8 @@ import Home from "@/pages/home";
 import FindPartner from "@/pages/find-partner";
 import Callback from "@/pages/callback";
 import NotFound from "@/pages/not-found";
+import Metrics from "@/pages/metrics";
+import Goals from "@/pages/goals";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
 import {
@@ -89,6 +91,8 @@ function Router() {
       <Route path="/" component={isAuthenticated ? Dashboard : Home} />
       <Route path="/callback" component={Callback} />
       <Route path="/dashboard" component={isAuthenticated ? Dashboard : Home} />
+      <Route path="/metrics" component={isAuthenticated ? Metrics : Home} />
+      <Route path="/goals" component={isAuthenticated ? Goals : Home} />
       <Route path="/user-profile" component={isAuthenticated ? UserProfile : Home} />
       <Route path="/my-alerts" component={isAuthenticated ? MyAlerts : Home} />
       <Route path="/my-recommendations" component={isAuthenticated ? MyRecommendations : Home} />
